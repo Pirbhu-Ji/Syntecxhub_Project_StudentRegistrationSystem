@@ -1,5 +1,7 @@
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.ResultSet;
+
 import javax.swing.*;
 
 public class Student_Login_Form {
@@ -60,18 +62,29 @@ public class Student_Login_Form {
         txtAddress.setFont(f);
         JScrollPane addressScroll = new JScrollPane(txtAddress);
 
-        JButton sbt = new JButton("Submit");
+        JButton crt = new JButton("Create");
+        JButton rd = new JButton("Read");
+        JButton upd = new JButton("Update");
+        JButton del = new JButton("Delete");
         JButton clr = new JButton("Clear");
         JButton exitBtn = new JButton("EXIT");
 
-        sbt.setFont(f); clr.setFont(f); exitBtn.setFont(f);
-        sbt.setBackground(new Color(0, 153, 76));
-        sbt.setForeground(Color.WHITE);
+        crt.setFont(f); clr.setFont(f); exitBtn.setFont(f);rd.setFont(f);
+        upd.setFont(f);del.setFont(f);
+
+        crt.setBackground(new Color(0, 153, 76));
+        crt.setForeground(Color.WHITE);
+        rd.setBackground(new Color(1, 142, 76));
+        rd.setForeground(Color.WHITE);
+        upd.setBackground(new Color(0, 123, 76));
+        upd.setForeground(Color.WHITE);
+        del.setBackground(new Color(2, 102, 76));
+        del.setForeground(Color.WHITE);
        
         clr.setBackground(new Color(204, 0, 0));
         clr.setForeground(Color.WHITE);
       
-        exitBtn.setBackground(new Color(0, 153, 76));
+        exitBtn.setBackground(new Color(0, 238, 76));
         exitBtn.setForeground(Color.WHITE);
 
         // Adding to panel
@@ -86,8 +99,9 @@ public class Student_Login_Form {
         panal.add(PhNO); panal.add(txtPhone);
         panal.add(new JLabel(""));
         panal.add(new JLabel(""));
-        panal.add(sbt); panal.add(clr);
-        panal.add(exitBtn); panal.add(new JLabel(""));
+        panal.add(crt);panal.add(rd);panal.add(upd);panal.add(del);
+        panal.add(exitBtn); panal.add(clr);
+        panal.add(new JLabel(""));
 
         panal.setBackground(new Color(220, 235, 255));
         fr.add(panal);
@@ -116,8 +130,97 @@ public class Student_Login_Form {
             }
         });
 
+         rd.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+        ResultSet rs = DBConnect.readStudents();
+        StringBuilder data = new StringBuilder();
+
+        try {
+            while (rs.next()) {
+                data.append("Name: ").append(rs.getString("name")).append("\n");
+                data.append("Father: ").append(rs.getString("father_name")).append("\n");
+                data.append("Age: ").append(rs.getInt("age")).append("\n");
+                data.append("Roll No: ").append(rs.getString("roll_no")).append("\n");
+                data.append("Dept: ").append(rs.getString("department")).append("\n");
+                data.append("Course: ").append(rs.getString("course")).append("\n");
+                data.append("Gender: ").append(rs.getString("gender")).append("\n");
+                data.append("Phone: ").append(rs.getString("phone")).append("\n");
+                data.append("Address: ").append(rs.getString("address")).append("\n");
+                data.append("-----------------------------\n");
+            }
+
+            JOptionPane.showMessageDialog(fr, new JScrollPane(new JTextArea(data.toString())));
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(fr, "Error: " + ex.getMessage());
+        }
+      }
+   });
+
+      upd.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+
+        String roll = RolNo.getText();
+
+        if (roll.isEmpty()) {
+            JOptionPane.showMessageDialog(fr, "Enter Roll No to update!");
+            return;
+        }
+
+        int ageValue;
+        try {
+            ageValue = Integer.parseInt(age.getText());
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(fr, "Age must be number!");
+            return;
+        }
+
+        String genderSelected = r1.isSelected() ? "Male" :
+                                r2.isSelected() ? "Female" : "Other";
+
+        DBConnect.updateStudent(
+            roll,
+            StdN.getText(),
+            FathN.getText(),
+            ageValue,
+            depart.getSelectedItem().toString(),
+            Courses.getSelectedItem().toString(),
+            genderSelected,
+            txtAddress.getText(),
+            txtPhone.getText()
+        );
+
+        JOptionPane.showMessageDialog(fr, "Record Updated!");
+      }
+   });
+
+     del.addActionListener(new ActionListener() {
+    public void actionPerformed(ActionEvent e) {
+
+        String roll = RolNo.getText();
+
+        if (roll.isEmpty()) {
+            JOptionPane.showMessageDialog(fr, "Enter Roll No to delete!");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(
+            null,
+            "Are you sure you want to delete?",
+            "Delete",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            DBConnect.deleteStudent(roll);
+            JOptionPane.showMessageDialog(fr, "Record Deleted!");
+        }
+       }
+   });
+
+
         // SUBMIT BUTTON
-        sbt.addActionListener(new ActionListener() {
+        crt.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
 
                 // BASIC VALIDATION
